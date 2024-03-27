@@ -14,7 +14,7 @@ class SimpleSpreadEnv(object):
         self.continuous_actions = "ddpg" in self.env_config.learn_policy or "ppo" in self.env_config.learn_policy
         self.env = simple_spread_v3.env(N=self.env_config.n_agents, local_ratio=0.5,
                                         max_cycles=self.env_config.max_cycles,
-                                        continuous_actions=self.continuous_actions)
+                                        continuous_actions=self.continuous_actions, render_mode="rgb_array")
         self.parallel_env = aec_to_parallel(self.env)
         self.world = self.parallel_env.unwrapped.world
         self.agents_name = self.parallel_env.possible_agents
@@ -23,7 +23,7 @@ class SimpleSpreadEnv(object):
         self.grid_size = self.env_config.grid_size
 
     def render(self, mode="human"):
-        return self.parallel_env.render(mode=mode)
+        return self.parallel_env.render()
 
     def reset(self):
         return self.parallel_env.reset(seed=self.env_config.seed)

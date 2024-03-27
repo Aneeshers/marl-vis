@@ -9,7 +9,7 @@ class ConfigName:
 
 
 class ConfigObjectFactory(object):
-    yaml_path = r"./config.yaml"
+    yaml_path = '/n/home04/amuppidi/marl_vis/Multi-Agent-Reinforcement-Learning/config.yaml'
     yaml_config = None
     environment_config = None
     train_config = None

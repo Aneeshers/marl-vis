@@ -1,0 +1,14 @@
+
+The following have been reloaded with a version change:
+  1) Mambaforge/23.3.1-fasrc01 => Mambaforge/22.11.1-fasrc01
+  2) python/3.10.12-fasrc01 => python/3.10.9-fasrc01
+
+/n/home04/amuppidi/.conda/envs/torch/lib/python3.10/site-packages/gym/envs/registration.py:307: DeprecationWarning: The package name gym_minigrid has been deprecated in favor of minigrid. Please uninstall gym_minigrid and install minigrid with `pip install minigrid`. Future releases will be maintained under the new package name minigrid.
+  fn()
+/n/home04/amuppidi/.conda/envs/torch/lib/python3.10/site-packages/pettingzoo/utils/conversions.py:144: UserWarning: The `observation_spaces` dictionary is deprecated. Use the `observation_space` function instead.
+  warnings.warn(
+/n/home04/amuppidi/marl_vis/Multi-Agent-Reinforcement-Learning/common/reply_buffer.py:233: UserWarning: Creating a tensor from a list of numpy.ndarrays is extremely slow. Please consider converting the list to a single numpy.ndarray with numpy.array() before converting to a tensor. (Triggered internally at ../torch/csrc/utils/tensor_new.cpp:261.)
+  actions = torch.Tensor(self.unit_actions)
+/n/home04/amuppidi/.conda/envs/torch/lib/python3.10/site-packages/torch/nn/modules/loss.py:535: UserWarning: Using a target size (torch.Size([120])) that is different to the input size (torch.Size([3, 120])). This will likely lead to incorrect results due to broadcasting. Please ensure they have the same size.
+  return F.mse_loss(input, target, reduction=self.reduction)
+slurmstepd: error: *** JOB 24131998 ON holygpu7c0915 CANCELLED AT 2024-03-20T02:15:35 DUE TO TIME LIMIT ***

@@ -5,8 +5,8 @@ import pickle
 from agent.agents import MyAgents
 from common.pettingzoo_environment import SimpleSpreadEnv
 from common.reply_buffer import *
-
-
+import numpy as np
+import imageio
 class RunnerSimpleSpreadEnv(object):
 
     def __init__(self, env: SimpleSpreadEnv):
@@ -42,7 +42,12 @@ class RunnerSimpleSpreadEnv(object):
     def run_marl(self):
         self.init_saved_model()
         run_episode = self.train_config.run_episode_before_train if "ppo" in self.env_config.learn_policy else 1
-        for epoch in range(self.current_epoch, self.train_config.epochs + 1):
+        action_log = []
+        positions_log = []
+        frames = []
+        frames_dir = 'frames'
+        os.makedirs(frames_dir, exist_ok=True)
+        for epoch in range(self.current_epoch, 35050):#self.train_config.epochs + 1):
             # 在正式开始训练之前做一些动作并将信息存进记忆单元中
             # grid_wise_control系列算法和常规marl算法不同, 是以格子作为观测空间。
             # ppo 属于on policy算法，训练数据要是同策略的
@@ -66,16 +71,34 @@ class RunnerSimpleSpreadEnv(object):
                         cycle += 1
                     self.batch_episode_memory.set_per_episode_len(cycle)
             elif isinstance(self.batch_episode_memory, CommBatchEpisodeMemory):
-
                 for i in range(run_episode):
                     obs = self.env.reset()[0]
                     finish_game = False
                     cycle = 0
                     while not finish_game and cycle < self.env_config.max_cycles:
                         state = self.env.state()
-                        actions_with_name, actions, log_probs = self.agents.choose_actions(obs)
+                        actions_with_name, actions, log_probs, std_devs = self.agents.choose_actions(obs)
                         obs_next, rewards, finish_game, infos = self.env.step(actions_with_name)
                         state_next = self.env.state()
+                        if cycle == 0:
+                            frame = self.env.render()
+                            frame_filename = os.path.join(frames_dir, f'frame_epoch_{epoch}_step_{cycle}.png')
+                            imageio.imwrite(frame_filename, frame)
+                        # Log agent actions and average standard deviations
+                        action_log.append({
+                            'epoch': epoch,
+                            'time_step': cycle,
+                            'actions': actions_with_name,
+                            'std_devs': std_devs
+                        })
+                        std = std_means = [np.mean(std_dev) for std_dev in std_devs]
+                        positions = {agent: obs_next[agent][2:4] for agent in obs_next}
+                        positions_log.append({
+                            'epoch': epoch,
+                            'time_step': cycle,
+                            'positions': positions,
+                            'std_dev': std
+                        })
                         if "ppo" in self.env_config.learn_policy:
                             self.batch_episode_memory.store_one_episode(one_obs=obs, one_state=state, action=actions,
                                                                         reward=rewards, log_probs=log_probs)
@@ -106,7 +129,19 @@ class RunnerSimpleSpreadEnv(object):
             if epoch % self.train_config.save_epoch == 0 and epoch != 0:
                 self.save_model_and_result(epoch)
             print("episode_{} over,avg_reward {}".format(epoch, avg_reward))
+        def save_log(log, filename):
+            with open(filename, 'wb') as f:
+                pickle.dump(log, f)
+        save_log(action_log, 'action_log.pkl')
+        save_log(positions_log, 'positions_log.pkl')
+        def save_frames(frames, filename):
+            with imageio.get_writer(filename, mode='I') as writer:
+                for frame in frames:
+                    writer.append_data(frame)
 
+        # After simulation
+        save_frames(frames, 'simulation.gif')
+        
     def init_saved_model(self):
         if os.path.exists(self.result_path) and (
                 os.path.exists(self.memory_path) or "ppo" in self.env_config.learn_policy) \
@@ -167,3 +202,4 @@ class RunnerSimpleSpreadEnv(object):
                     obs = obs_next
                     cycle += 1
         return total_rewards / self.train_config.evaluate_epoch
+    

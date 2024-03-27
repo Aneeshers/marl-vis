@@ -17,6 +17,8 @@ def main(args):
         runner.run_marl()
     finally:
         env.close()
+    print("done training")
+    
 
 
 def evaluate():

@@ -97,6 +97,7 @@ class MyAgents:
     def choose_actions(self, obs: dict) -> tuple:
         actions_with_name = {}
         actions = []
+        std_devs = []
         log_probs = []
         obs = torch.stack([torch.Tensor(value) for value in obs.values()], dim=0)
         self.policy.init_hidden(1)
@@ -143,7 +144,9 @@ class MyAgents:
                 log_probs.append(dist.log_prob(torch.Tensor(action).to(self.device)))
                 actions_with_name[agent_name] = action
                 actions.append(action)
-        return actions_with_name, actions, log_probs
+                std_dev = torch.sqrt(torch.diag(dist.covariance_matrix)).cpu().numpy()  # Extract standard deviation
+                std_devs.append(std_dev)
+        return actions_with_name, actions, log_probs, std_devs
 
     def save_model(self):
         self.policy.save_model()
